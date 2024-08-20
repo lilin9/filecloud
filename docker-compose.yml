@@ -1,0 +1,41 @@
+version: '3.8'
+services:
+  sqlserver:
+    image: "mcr.microsoft.com/mssql/server:latest"
+    container_name: sqlserver
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=31415926535@Li
+    restart: always
+
+  web:
+    build: ./filecloud-web
+    container_name: filecloud_web_container
+    ports:
+      - "8080:80"
+    restart: always
+
+  api:
+    build: ./filecloud-webapi
+    depends_on:
+      - sqlserver
+    container_name: filecloud_api_container
+    ports:
+      - "7963:7963"
+    volumes:
+      - /home/wwwroot:/home/wwwroot
+    restart: always
+
+  nginx:
+    build: ./nginx
+    container_name: nginx
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+      - "9980:9980"
+    volumes:
+      - /home/wwwroot/filecloud:/home/wwwroot/filecloud
+    restart: always
